@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Flow</title>
+<link rel="stylesheet" href="style.css">
+<script src="_magpie/bridge.js"></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="head">
+  <div>
+    <h1>Google Flow</h1>
+    <p class="sub">Video generation through your own Google account. Sign in once; the proxy keeps the session and reports what each clip cost.</p>
+  </div>
+  <span class="pill" id="proxy">checking…</span>
+</header>
+
+<section class="grid">
+  <div class="card"><span class="k">Flow calls, 30 days</span><b id="calls">—</b></div>
+  <div class="card"><span class="k">Clips' output tokens</span><b id="tok">—</b></div>
+  <div class="card"><span class="k">Models used</span><b id="models">—</b></div>
+</section>
+<p class="sub" id="creditsnote">Credits left and the spend per clip show on the <b>Usage</b> page, in this provider's card, and in each generation's result.</p>
+
+<section>
+  <h2>Accounts</h2>
+  <p class="sub" id="accnote">Loading…</p>
+  <div id="acclist"></div>
+  <div class="row">
+    <input id="label" type="text" placeholder="Name for the new account (e.g. the Google address)">
+    <button type="button" id="signin">Sign in with Google</button>
+  </div>
+  <p class="sub" id="loginmsg"></p>
+</section>
+
+<section>
+  <h2>Recent generations</h2>
+  <table id="usage" hidden>
+    <thead><tr><th>When</th><th>Model</th><th>Length</th><th>Clips</th><th class="num">Credits</th><th>Status</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="sub" id="usagenone">Nothing generated yet.</p>
+</section>
+
+<section>
+  <h2>Models</h2>
+  <p class="sub" id="modelnote">Loading…</p>
+  <div id="models"></div>
+</section>
+</body>
+</html>

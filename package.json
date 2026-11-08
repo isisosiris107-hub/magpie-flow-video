@@ -1,0 +1,68 @@
+{
+  "name": "magpie-flow-video",
+  "version": "0.2.0",
+  "description": "Google Flow video generation for magpie: a local proxy, an MCP server, and a plugin with model catalog, credits and multiple accounts.",
+  "type": "module",
+  "main": "./index.mjs",
+  "keywords": [
+    "magpie-plugin",
+    "google-flow",
+    "veo",
+    "video",
+    "mcp"
+  ],
+  "license": "MIT",
+  "repository": "github:isisosiris107-hub/magpie-flow-video",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "accounts.mjs",
+    "browser.mjs",
+    "config.mjs",
+    "fixtures/",
+    "flow.mjs",
+    "flowhttp.mjs",
+    "icon.svg",
+    "index.mjs",
+    "page/",
+    "page/app.js",
+    "page/panel.css",
+    "page/panel.html",
+    "page/panel.js",
+    "page/style.css",
+    "schema.mjs",
+    "server.mjs",
+    "setup.mjs",
+    "signin.mjs",
+    "test.mjs"
+  ],
+  "magpie": {
+    "icon": "icon.svg",
+    "page": {
+      "title": "Google Flow",
+      "file": "page/index.html",
+      "icon": "icon.svg"
+    },
+    "panels": [
+      {
+        "slot": "usage",
+        "title": "Google Flow",
+        "file": "page/panel.html"
+      }
+    ],
+    "permissions": [
+      "usage:summary",
+      "providers:list"
+    ]
+  },
+  "scripts": {
+    "serve": "UV_THREADPOOL_SIZE=1 MALLOC_ARENA_MAX=1 node --expose-gc --max-old-space-size=64 --max-semi-space-size=1 server.mjs serve",
+    "mcp": "UV_THREADPOOL_SIZE=1 MALLOC_ARENA_MAX=1 node --expose-gc --max-old-space-size=64 --max-semi-space-size=1 server.mjs mcp",
+    "check": "node server.mjs check",
+    "login": "node server.mjs login",
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

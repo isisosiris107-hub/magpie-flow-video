@@ -1,0 +1,50 @@
+// One tool schema for both the stdio MCP server and the magpie plugin.
+import { CAPTCHA_VIDEO } from './flow.mjs';
+
+export const VIDEO_SCHEMA = {
+  type: 'object',
+  required: ['prompt'],
+  properties: {
+    prompt: { type: 'string', description: 'What the video should show.' },
+    negative_prompt: { type: 'string', description: 'Things to avoid; appended to the prompt (Flow has no native negative-prompt field).' },
+    mode: { type: 'string', enum: ['auto', 'text', 'first_frame', 'first_last', 'references', 'extend', 'upsample'], default: 'auto', description: 'Inferred from the inputs you supply.' },
+    model: { type: 'string', description: 'A family name (omni-flash-1-2, omni-flash-1-1, veo-3-1-fast, veo-3-1-quality, veo-3-1-lite) or an exact Flow wire key (macaron_cookie_t2v_10s, veo_3_1_i2v_s_fast_ultra). Run list_models with refresh:true when a new model is released. Leave out for the default (Omni 1.1 Flash).' },
+    duration: { type: ['number', 'string'], description: 'Clip length in seconds ("10s" also works). Omni 1.2 Flash supports every integer 3..15; the default Omni 1.1 Flash has 4, 6, 8 and 10.' },
+    seconds: { type: ['number', 'string'], description: 'Alias of duration (magpie/OpenAI shape).' },
+    output_count: { type: 'integer', minimum: 1, maximum: 4, default: 1, description: 'Number of variants, "4x" = 4.' },
+    n: { type: 'integer', minimum: 1, maximum: 4, description: 'Alias of output_count.' },
+    variants: { type: 'integer', minimum: 1, maximum: 4, description: 'Alias of output_count.' },
+    aspect_ratio: { type: ['string', 'number'], description: '9:16 / portrait (=1), 16:9 / landscape (=2), 1:1 / square (=0), or a WIDTHxHEIGHT size.' },
+    size: { type: 'string', description: 'Alias: "16:9", "9:16", "1280x720", "4K".' },
+    resolution: { type: 'string', enum: ['360p', '720p', '1080p', '4K'], default: '720p' },
+    start_frame: { type: 'string', description: 'First frame: local path, http(s) URL or data: URL.' },
+    image: { type: 'string', description: 'Alias of start_frame.' },
+    input_reference: { type: ['string', 'object'], description: 'Alias of start_frame (magpie/OpenAI shape).' },
+    end_frame: { type: 'string', description: 'Last frame for first_last mode.' },
+    last_frame: { type: 'string', description: 'Alias of end_frame.' },
+    reference_images: { type: 'array', items: { type: ['string', 'object'] }, description: '1-3 ingredient/reference images.' },
+    references: { type: 'array', items: { type: ['string', 'object'] }, description: 'Alias of reference_images.' },
+    video_media_id: { type: 'string', description: 'Existing Flow media id for extend / upsample.' },
+    video: { type: 'string', description: 'Alias of video_media_id.' },
+    seed: { type: ['string', 'number'], description: 'Reproducible variant seeds.' },
+    audio_pref: { type: 'integer', enum: [0, 1, 2], default: 2, description: 'Flow audio preference (0 silent, 1, 2).' },
+    audio: { type: 'boolean', description: 'false → audio_pref 1.' },
+    project_id: { type: 'string', description: 'Reuse a specific Flow project instead of the cached one.' },
+    project_title: { type: 'string', default: 'magpie-flow-video' },
+    captcha_action: { type: 'string', default: CAPTCHA_VIDEO },
+    path: { type: 'string', description: 'Output directory, or a .mp4 filename for single output.' },
+    wait_seconds: { type: 'number', minimum: 0, maximum: 45, default: 20, description: 'How long to wait before returning a job id (MCP clients time out at 60s).' },
+    account: { type: 'string', description: 'Which signed-in Google/Flow account to use. Omit for the default. See list_accounts.' },
+  },
+};
+
+export const TOOLS = [
+  { name: 'generate_video', description: 'Generate a video with Google Flow using your signed-in account. Supports every Flow generation parameter: 1-4 variants, 3-15s (Omni 1.2 Flash), 360p/720p/1080p/4K, aspect ratio, model key, seed, text/start-frame/first+last-frame/references/extend/upsample, audio preference, project and output path. Returns local .mp4 paths.', inputSchema: VIDEO_SCHEMA },
+  { name: 'generation_result', description: 'Poll a running generation by id and save the .mp4 files.', inputSchema: { type: 'object', required: ['id'], properties: { id: { type: 'string' }, path: { type: 'string' }, wait_seconds: { type: 'number', minimum: 0, maximum: 45, default: 20 } } } },
+  { name: 'list_models', description: 'List Flow model families and their wire keys, live prices and durations. Set refresh:true to refetch the catalog from Flow so newly released models appear.', inputSchema: { type: 'object', properties: { refresh: { type: 'boolean', description: 'Refetch HTrJv from Flow; costs no credits. Use when a new model is released.' }, account: { type: 'string', description: 'Account whose session should read the catalog.' } } } },
+  { name: 'session_status', description: 'Check whether the Google cookies are signed in to Flow (no credits are spent).', inputSchema: { type: 'object', properties: { account: { type: 'string', description: 'Account id; omit for the default.' } } } },
+  { name: 'list_accounts', description: 'List the Google cookie jars (Flow accounts) the proxy can use, and which one is the default.', inputSchema: { type: 'object', properties: {} } },
+  { name: 'credit_usage', description: 'Show Flow credits left and credits spent, per account, model and day. Reads the live balance of one account (no credits spent).', inputSchema: { type: 'object', properties: { account: { type: 'string', description: 'Account id to read a live balance for; omit for the default.' }, all: { type: 'boolean', description: 'Read every account’s balance (slower: one browser session each).' }, limit: { type: 'integer', minimum: 1, maximum: 500, default: 100 } } } },
+  { name: 'sign_in', description: 'Open a browser window so the user can sign in to Google Flow, then save the cookies as a new account. Starts the window and returns at once; call sign_in_status with the returned id to follow it. The user must complete the Google sign-in themselves.', inputSchema: { type: 'object', properties: { account: { type: 'string', description: 'Account id to create or replace; omit to derive one from the label.' }, label: { type: 'string', description: 'A name for the account, e.g. the Google address.' } } } },
+  { name: 'sign_in_status', description: 'Follow a sign-in started with sign_in. Says whether the window is still waiting, finished, or failed.', inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'The id sign_in returned.' } } } },
+];
